@@ -12,7 +12,50 @@ console.info({ answer });
 
 const randKey = () => { return Math.random() + Math.random() };
 
+let keysInit = {};
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach((letter) => {
+  keysInit[letter] = "";
+});
+
 function Game() {
+
+  const KeyBoard = ({ allInputs, keys }) => {
+    const inputsMerged = allInputs.join('');
+    const rows = [
+      "QWERTYUIOP".split(''),
+      "ASDFGHJKL".split(''),
+      "ZXCVBNM".split('')
+    ];
+
+    return (
+      <div className="keyboard">
+        <div className="row">
+          {rows[0].map((letter, idx) => {
+            return (
+              <span key={randKey()} className={`key ${keys[letter]}`}>
+                {letter}
+              </span>)
+          })}
+        </div>
+        <div className="row">
+          {rows[1].map((letter, idx) => {
+            return (
+              <span key={randKey()} className={`key ${keys[letter]}`}>
+                {letter}
+              </span>)
+          })}
+        </div>
+        <div className="row">
+          {rows[2].map((letter, idx) => {
+            return (
+              <span key={randKey()} className={`key ${keys[letter]}`}>
+                {letter}
+              </span>)
+          })}
+        </div>
+      </div>
+    )
+  }
 
   const StatusBanner = (inputRecord) => {
     let status = "";
@@ -43,30 +86,51 @@ function Game() {
     if (guess == "") {
       return
     }
-    console.log({ "guess": guess.toUpperCase() });
-    const nextInputRecord = [...inputRecord];
+    const nextInputRecord = [...inputRecord.inputs];
     const nearestEmptySpace = nextInputRecord.indexOf('     ');
-    nextInputRecord.splice(nearestEmptySpace, 1, guess.toUpperCase())
-    setUserInputRecord(nextInputRecord);
+    nextInputRecord.splice(nearestEmptySpace, 1, guess.toUpperCase());
+
+    const nextKeyStates = Object.create(inputRecord.keyStates);
+    nextInputRecord.forEach(recordedGuess => {
+      [...checkGuess(recordedGuess, answer)].forEach(({ letter, status }) => {
+        if (nextKeyStates[letter] == "correct") {
+          return
+        } else if (status == "correct") {
+          nextKeyStates[letter] = "correct"
+        } else if (nextKeyStates[letter] == "misplaced") {
+          return
+        } else if (status == "misplaced") {
+          nextKeyStates[letter] = "misplaced"
+        } else if (nextKeyStates[letter] == "incorrect") {
+          return
+        } else if (status == "incorrect") {
+          nextKeyStates[letter] = "incorrect"
+        }
+      })
+    })
+    setUserInputRecord({ inputs: nextInputRecord, keyStates: nextKeyStates });
     setUserInput('');
   }
   const [inputDisable, setInputDisable] = React.useState(false);
   const [userInput, setUserInput] = React.useState('');
   // Outputs 
   const emptyX = Array(NUM_OF_GUESSES_ALLOWED).fill('     ');
-  const [inputRecord, setUserInputRecord] = React.useState(emptyX);
-  console.log(checkGuess('WHALE', answer));
+  const [inputRecord, setUserInputRecord] = React.useState({ inputs: emptyX, keyStates: keysInit });
+  // console.log(inputRecord);
   return (
     <>
       <div className="guess-results">
-        {inputRecord.map((value) => {
+        {inputRecord.inputs.map((value) => {
           return (<p className="guess" key={randKey()}>{[...checkGuess(value, answer)].map((letter) => {
+            const letterTarget = letter.letter;
+            const letterStatus = letter.status;
             return (
-              <span className={`cell ${letter.status}`} key={randKey()}>{letter.letter}</span>
+              <span className={`cell ${letterTarget == " " ? " " : letterStatus}`} key={randKey()}>{letter.letter}</span>
             )
           })}</p>)
         })}
       </div>
+
       <form className="guess-input-wrapper" onSubmit={(e) => {
         submitGuess(e);
       }}>
@@ -79,7 +143,8 @@ function Game() {
           }}
         ></input>
       </form>
-      <StatusBanner inputs={inputRecord} />
+      <KeyBoard allInputs={inputRecord.inputs} keys={inputRecord.keyStates} />
+      <StatusBanner inputs={inputRecord.inputs} />
     </>
   );
 }

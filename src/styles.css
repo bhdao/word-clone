@@ -230,3 +230,42 @@ h1 {
     transform: translateY(0%);
   }
 }
+
+/* KeyBoard thing */
+.keyboard > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.keyboard .row {
+  margin: 2px 0;
+}
+
+.keyboard .key {
+  display: flex;
+  max-width: 9%;
+  width: 100%;
+  align-items: center;
+  min-height: 2.5rem;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid gray;
+  border-radius: 15%;
+  margin: 2px;
+}
+
+.keyboard .key.incorrect {
+  background: gray;
+  color: white;
+}
+.keyboard .key.misplaced {
+  background: var(--color-warning);
+  color: white;
+}
+.keyboard .key.correct {
+  background: var(--color-success);
+  color: white;
+}

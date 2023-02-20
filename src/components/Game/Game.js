@@ -6,9 +6,11 @@ import { checkGuess } from '../../game-helpers';
 import { NUM_OF_GUESSES_ALLOWED } from '../../../src/constants.js';
 
 // Pick a random word on every pageload.
-const answer = sample(WORDS);
-// To make debugging easier, we'll log the solution in the console.
-console.info({ answer });
+const getAnAnswer = () => {
+  let answer = sample(WORDS);
+  console.log(answer);
+  return answer
+};
 
 const randKey = () => { return Math.random() + Math.random() };
 
@@ -57,25 +59,32 @@ function Game() {
     )
   }
 
-  const StatusBanner = (inputRecord) => {
+  const StatusBanner = () => {
     let status = "";
     let count = inputRecord.inputs.indexOf('     ');
+    const restart =
+      <button onClick={() => { restartGame() }}>
+        [<b>RESTART?</b>]
+      </button>
+      ;
     if (count == -1) {
       count = 6;
     }
     if (inputRecord.inputs.includes(answer)) {
-      setInputDisable(true);
       return (
-        <div className={`happy banner`}>
-          <b>Congratulations!</b> Got it in <b>{`${count} ${count < 2 ? 'guess' : 'guesses'}`}.</b>
-        </div>
+        <>
+          <div className={`happy banner`}>
+            <b>Congratulations!</b> Got it in <b>{`${count} ${count < 2 ? 'guess' : 'guesses'}`}.</b> {restart}
+          </div>
+        </>
       )
     } else if (inputRecord.inputs.indexOf('     ') == -1) {
-      setInputDisable(true);
       return (
-        <div className={`sad banner`}>
-          Sorry, the correct answer is <b>{answer}</b>.
-        </div>
+        <>
+          <div className={`sad banner`}>
+            Sorry, the correct answer is <b>{answer}</b>. {restart}
+          </div>
+        </>
       )
     };
   }
@@ -108,15 +117,29 @@ function Game() {
         }
       })
     })
+    if (nextInputRecord.indexOf('     ') == -1 || nextInputRecord.includes(answer)) {
+      setInputDisable(true);
+    }
     setUserInputRecord({ inputs: nextInputRecord, keyStates: nextKeyStates });
     setUserInput('');
   }
+
+  const restartGame = () => {
+    setInputDisable(false);
+    setUserInput('');
+    setUserInputRecord({ inputs: emptyX, keyStates: keysInit });
+    let nextAnswer = getAnAnswer();
+    setAnswer(nextAnswer);
+  }
+
   const [inputDisable, setInputDisable] = React.useState(false);
   const [userInput, setUserInput] = React.useState('');
+  const [answer, setAnswer] = React.useState(getAnAnswer);
   // Outputs 
   const emptyX = Array(NUM_OF_GUESSES_ALLOWED).fill('     ');
   const [inputRecord, setUserInputRecord] = React.useState({ inputs: emptyX, keyStates: keysInit });
   // console.log(inputRecord);
+
   return (
     <>
       <div className="guess-results">
@@ -144,7 +167,7 @@ function Game() {
         ></input>
       </form>
       <KeyBoard allInputs={inputRecord.inputs} keys={inputRecord.keyStates} />
-      <StatusBanner inputs={inputRecord.inputs} />
+      <StatusBanner />
     </>
   );
 }

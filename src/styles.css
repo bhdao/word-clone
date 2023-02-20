@@ -269,3 +269,7 @@ h1 {
   background: var(--color-success);
   color: white;
 }
+
+div.banner > button:hover {
+  color: yellow;
+}
